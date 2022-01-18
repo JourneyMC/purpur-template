@@ -1,0 +1,27 @@
+version: '3.9'
+
+volumes:
+  plugin_data:
+  worlds:
+
+services:
+  server:
+    build:
+      context: .
+      args:
+        uid: 10002
+        gid: 10002
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      HEAP_SIZE: '2G'
+    volumes:
+      - plugin_data:/plugin_data
+      - worlds:/worlds
+  db:
+    image: mariadb
+    restart: unless-stopped
+
