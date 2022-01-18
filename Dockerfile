@@ -39,8 +39,11 @@ ENV PURPUR_JAR_URL=https://api.purpurmc.org/v2/purpur/${purpur_version}/latest/d
 # Add the Purpur jar
 ADD --chown=nonroot:nonroot ${PURPUR_JAR_URL} /opt/purpur/purpur.jar
 
+# Worlds data path
+ARG worlds_data_path=/worlds
+
 # Entrypoint
-ENTRYPOINT ["/sbin/tini", "--", "java", "-jar", "/opt/purpur/purpur.jar", "nogui", "--world-container", "worlds"]
+ENTRYPOINT ["/sbin/tini", "--", "java", "-jar", "/opt/purpur/purpur.jar", "nogui", "--world-container", "${worlds_data_path}"]
 
 # Copy scripts
 COPY --chown=nonroot:nonroot scripts/ /usr/local/bin/
@@ -50,18 +53,23 @@ RUN chmod -R +x /usr/local/bin/
 ARG secrets_path=/.secrets
 COPY /secrets $secrets_path
 
-# Copy server files & substitute envvars
+# Copy server files
 ARG data_path=/home/nonroot/minecraft
 COPY --chown=nonroot:nonroot /server $data_path
+
+# Substitute envvars
 RUN /usr/local/bin/substitute_envvars.sh ${data_path} ${secrets_path}
+
 
 # Switch user to run as non-root
 USER nonroot
 
 # Persistent data
 ARG plugin_data_path=/plugin_data
-ARG worlds_data_path=/worlds
 VOLUME $plugin_data_path $worlds_data_path $data_path/logs
 
 # Initialize plugin data
+RUN mkdir $data_path/plugins
 RUN /usr/local/bin/init_plugindata.sh ${data_path}/plugins ${plugin_data_path}
+
+WORKDIR $data_path
