@@ -1,11 +1,6 @@
 #!/bin/bash
 
 export_secrets(){
-  # Check if folder has no secrets
-  if [[ -z $(find "$1" -type f -regex ".*\.env" -print -quit) ]]; then
-    return 1
-  fi
-
   # Export all secrets recursively
   set -o allexport
   while IFS= read -rd '' file; do
@@ -30,7 +25,7 @@ substitute_secrets() {
 export -f substitute_secrets
 
 # Export secrets
-export_secrets "$2" &&
+export_secrets "$2"
 
 # Substitute secrets
 substitute_secrets "$1"

@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [ !"$1" ]; then
+  exit
+fi
+
 find "$1" -maxdepth 1 -mindepth 1 -type d -print0 |
   while IFS= read -rd '' dir; do
     # Check recursively if path contains any symbolic links
