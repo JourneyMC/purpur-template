@@ -26,4 +26,9 @@ services:
   db:
     image: mariadb
     restart: unless-stopped
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database:/docker-entrypoint-initdb.d
+    env_file:
+      - ./secrets/db.env
 
