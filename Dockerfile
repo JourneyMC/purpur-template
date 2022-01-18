@@ -44,18 +44,19 @@ ENTRYPOINT ["/sbin/tini", "--", "java", "-jar", "/opt/purpur/purpur.jar", "nogui
 
 # Copy scripts
 COPY --chown=nonroot:nonroot scripts/ /usr/local/bin/
+RUN chmod -R +x /usr/local/bin/
 
 # Copy secrets
 ARG secrets_path=/.secrets
 COPY /secrets $secrets_path
 
+# Copy server files & substitute envvars
+ARG data_path=/home/nonroot/minecraft
+COPY --chown=nonroot:nonroot /server $data_path
+RUN /usr/local/bin/substitute_envvars.sh ${data_path} ${secrets_path}
+
 # Switch user to run as non-root
 USER nonroot
-
-# Copy server files & substitute envvars
-ARG data_path=/home/nonroot/minecraft/
-COPY /server $data_path
-RUN bash /usr/local/bin/substitute_envvars.sh ${data_path} ${secrets_path}
 
 # Persistent data
 ARG plugin_data_path=/plugin_data
