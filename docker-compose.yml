@@ -3,6 +3,7 @@ version: '3.9'
 volumes:
   plugin_data:
   worlds:
+  db_data:
 
 services:
   server:
