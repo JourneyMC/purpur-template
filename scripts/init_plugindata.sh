@@ -18,12 +18,11 @@ find "$1" -maxdepth 1 -mindepth 1 -type d -print0 |
     find "$1"/"$plugin_dir" -type l -print0 |
       while IFS= read -rd '' slink; do
         filename="$(basename "$slink")"
-        plugin_data_name=$(basename "$2")
         if [[ $filename != *.* ]]; then
-          mkdir -p "${slink/plugins/$plugin_data_name}"
+          mkdir -p "${slink/*plugins/$PLUGIN_DATA_PATH}"
         else
           slink_dir=$(dirname "$slink")
-          mkdir -p "${slink_dir/plugins/$plugin_data_name}"
+          mkdir -p "${slink_dir/*plugins/$PLUGIN_DATA_PATH}"
         fi
       done
   done
