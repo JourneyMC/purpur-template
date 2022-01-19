@@ -4,6 +4,7 @@ FROM eclipse-temurin:17-alpine
 RUN apk add --no-cache \
     bash \
     gettext \
+    su-exec \
     tini
 
 # UID & GID for non-root user
@@ -24,7 +25,7 @@ ARG heap_size=4G
 ENV HEAP_SIZE=$heap_size
 
 # Aikar JVM Flags
-ARG java_tool_options="-Xmx${HEAP_SIZE} -Xms${HEAP_SIZE} -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 \
+ARG java_tool_options="-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 \
 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 \
 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 \
 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 \
@@ -39,36 +40,34 @@ ENV PURPUR_JAR_URL=https://api.purpurmc.org/v2/purpur/${purpur_version}/latest/d
 # Add the Purpur jar
 ADD --chown=nonroot:nonroot ${PURPUR_JAR_URL} /opt/purpur/purpur.jar
 
-# Entrypoint
-ENTRYPOINT ["/sbin/tini", "--", "java", "-jar", "/opt/purpur/purpur.jar", "nogui", "--world-container", "/worlds"]
-
 # Copy scripts
-COPY --chown=nonroot:nonroot scripts/ /usr/local/bin/
+COPY scripts/ /usr/local/bin/
+RUN chmod -R +x /usr/local/bin
+
+# Entrypoint
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # Copy secrets
 ARG secrets_path=/.secrets
-COPY --chown=nonroot:nonroot secrets/ $secrets_path
+COPY secrets/ $secrets_path
 
 # Copy server files
 ARG data_path=/home/nonroot/minecraft
+ENV DATA_PATH=$data_path
 COPY --chown=nonroot:nonroot server/ $data_path
 
 # Create data dirs
 ARG worlds_data_path=/worlds
+ENV WORLDS_DATA_PATH=$worlds_data_path
 ARG plugin_data_path=/plugin_data
+ENV PLUGIN_DATA_PATH=$plugin_data_path
 RUN mkdir -p $plugin_data_path $worlds_data_path $data_path/logs \
   && chown -R nonroot:nonroot $plugin_data_path $worlds_data_path $data_path/logs
-
-# Switch user to run as non-root
-USER nonroot
-
-# Substitute envvars
-RUN bash /usr/local/bin/substitute_envvars.sh ${data_path} ${secrets_path}
 
 # Persistent data
 VOLUME $plugin_data_path $worlds_data_path $data_path/logs
 
-# Initialize plugin data
-RUN bash /usr/local/bin/init_plugindata.sh ${data_path}/plugins ${plugin_data_path}
+# Substitute envvars
+RUN /usr/local/bin/substitute_envvars.sh ${data_path} ${secrets_path}
 
 WORKDIR $data_path
