@@ -26,3 +26,5 @@ find "$1" -maxdepth 1 -mindepth 1 -type d -print0 |
         fi
       done
   done
+
+chown -R nonroot:nonroot $PLUGIN_DATA_PATH
