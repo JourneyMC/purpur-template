@@ -33,3 +33,19 @@ services:
     env_file:
       - ./secrets/db.env
 
+  backup:
+    hostname: server_backup
+    build: ./backup
+    environment:
+      RCON_HOST: server
+      RCON_PORT: 25575
+      RESTIC_REPOSITORY: rclone:backend:bucket
+      BACKUP_CRON: "0 */12 * * *"
+      RESTIC_FORGET_ARGS: "--prune --keep-last 4 --keep-daily 5 --keep-weekly 4 --keep-monthly 6 --keep-yearly 3"
+    volumes:
+      - ~/.config/rclone:/root/.config/rclone
+      - ./backup/hooks:/hooks
+      - worlds:/data/worlds:ro
+      - plugin_data:/data/plugin_data:ro
+    env_file:
+      - ./secrets/backup.env
