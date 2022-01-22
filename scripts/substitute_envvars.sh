@@ -12,7 +12,7 @@ export_secrets(){
 export -f export_secrets
 
 substitute_secrets() {
-  find "$1" -type f -regex ".*\.\(yml\|yaml\|toml\)$" -print0 |
+  find "$1" -type f -regex ".*\.\(yml\|yaml\|toml\|properties\)$" -print0 |
       while IFS= read -rd '' file; do
         TEMPFILE=$(mktemp -t envsubst.XXXXXXXXXX) || exit 1
         # shellcheck disable=SC2064
