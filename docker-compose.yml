@@ -45,6 +45,7 @@ services:
     volumes:
       - ~/.config/rclone:/root/.config/rclone
       - ./backup/hooks:/hooks
+      - ./secrets/.my.cnf:/root/.my.cnf
       - worlds:/data/worlds:ro
       - plugin_data:/data/plugin_data:ro
     env_file:
