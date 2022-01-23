@@ -4,6 +4,7 @@ volumes:
   plugin_data:
   worlds:
   db_data:
+  backup_cache:
 
 services:
   server:
@@ -43,6 +44,7 @@ services:
       BACKUP_CRON: "0 */12 * * *"
       RESTIC_FORGET_ARGS: "--prune --keep-last 4 --keep-daily 5 --keep-weekly 4 --keep-monthly 6 --keep-yearly 3"
     volumes:
+      - backup_cache:/root/.cache/restic
       - ~/.config/rclone:/root/.config/rclone
       - ./backup/hooks:/hooks
       - ./secrets/.my.cnf:/root/.my.cnf
