@@ -52,3 +52,4 @@ services:
       - plugin_data:/data/plugin_data:ro
     env_file:
       - ./secrets/backup.env
+      - ~/.secrets/backup.env
